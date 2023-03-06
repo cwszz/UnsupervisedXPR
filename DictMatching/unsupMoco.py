@@ -54,9 +54,6 @@ class BackBone_Model(nn.Module):
         word_embd = torch.stack(word_embd)    # [B, H] 
         new_opt = torch.stack(new_opt)
         new_mask = torch.stack(new_mask)
-        # word_embd: [B, H]
-        # new_opt: [B, S, H]
-        # new_mask: [B, S]
         return word_embd
     
     def extra_first_cls(self,opt):
@@ -96,7 +93,7 @@ class MoCo(nn.Module):
     https://arxiv.org/abs/1911.05722
     """
 
-    def __init__(self,args, K=2048, m=0.999, T=0.04,config=None):
+    def __init__(self,args, K=2048, m=0.999, T=0.04,config=None, bn=False):
         """
         dim: feature dimension (default: 128)
         K: queue size; number of negative keys (default: 65536)
@@ -109,6 +106,7 @@ class MoCo(nn.Module):
         self.K = K
         self.m = m
         self.T = T
+        self.bn = bn
 
         self.encoder_q = BackBone_Model(layer_id=args.layer_id)
         # create the queue
@@ -196,9 +194,11 @@ class MoCo(nn.Module):
     def forward(self, im_q, im_k):
         with autocast():
             q = self.encoder_q(*im_q,sample_num=self.train_sample_num)  # queries: NxC
-            q = nn.functional.normalize(q, dim=1)
-            
             k = self.encoder_q(*im_k,sample_num=self.train_sample_num)  # keys: NxC
+            if self.bn:
+                q = q - torch.mean(q, dim=0)
+                k = k - torch.mean(k, dim=0)
+            q = nn.functional.normalize(q, dim=1)
             k = nn.functional.normalize(k, dim=1)
  
             l_pos = torch.einsum('nc,mc->nm', [q, k])

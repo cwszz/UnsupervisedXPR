@@ -14,6 +14,7 @@ old_result
 aug_result/*
 log/*
 *.log
+XPR_cpt
 *.out
 MocoResult/*
 old_log
@@ -30,3 +31,5 @@ backup
 adv_result
 unsup_result
 mask_unsup_result
+mask_result
+__pycache__

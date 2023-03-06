@@ -221,123 +221,84 @@ class WordWithContextDatasetWW(Dataset):
             w2_mask = self.generate_mask(w2_words)
             return w1_words,w2_words,w1_mask,w2_mask
 
-        src_mapping, trg_mapping = list(range(len(sample_tuples))), list(range(len(sample_tuples)))
-        while True:
-            random.shuffle(src_mapping)
-            for i, each_id in enumerate(src_mapping):
-                if each_id == i:
-                    continue
-            break
-        while True:
-            random.shuffle(trg_mapping)
-            for i, each_id in enumerate(trg_mapping):
-                if each_id == i:
-                    continue
-            break
-        adv_sample = self.generate_negative(sample_tuples,src_mapping=src_mapping,trg_mapping=trg_mapping)
-
         indices_w1,indices_w2 = [],[]
-        indices_w3, indices_w4 = [], []
         for i in sample_tuples:
             indices_w1 += i[0][0]
             indices_w2 += i[1][0]
-        for i in adv_sample:
-            indices_w3 += i[0][0]
-            indices_w4 += i[1][0]
         w1_index = [i[0][1] for i in sample_tuples]
         w1_length = [i[0][2] for i in sample_tuples]
         w1_words = [i[0][3] for i in sample_tuples]
         w2_index = [i[1][1] for i in sample_tuples]
         w2_length = [i[1][2] for i in sample_tuples]
         w2_words = [i[1][3] for i in sample_tuples]
-
-        w3_index = [i[0][1] for i in adv_sample]
-        w3_length = [i[0][2] for i in adv_sample]
-        w3_words = [i[0][3] for i in adv_sample]
-        w4_index = [i[1][1] for i in adv_sample]
-        w4_length = [i[1][2] for i in adv_sample]
-        w4_words = [i[1][3] for i in adv_sample]
         
         # indices_w1 B * [ExampleNum, L]
         # [B, S]
         indices_w1 = my_pad_sequence(indices_w1, batch_first=True, padding_value=self.vocab.pad_token_id,max_len=self.max_len)
         indices_w2 = my_pad_sequence(indices_w2, batch_first=True, padding_value=self.vocab.pad_token_id,max_len=self.max_len)
-        indices_w3 = my_pad_sequence(indices_w3, batch_first=True, padding_value=self.vocab.pad_token_id,max_len=self.max_len)
-        indices_w4 = my_pad_sequence(indices_w4, batch_first=True, padding_value=self.vocab.pad_token_id,max_len=self.max_len)
-        
+         
         w1_mask = self.generate_mask(indices_w1)
         w2_mask = self.generate_mask(indices_w2)
         w1_type = self.generate_type(indices_w1,w1_index,w1_length)
         w2_type = self.generate_type(indices_w2,w2_index,w2_length)
 
-        w3_mask = self.generate_mask(indices_w3)
-        w4_mask = self.generate_mask(indices_w4)
-        w3_type = self.generate_type(indices_w3,w3_index,w3_length)
-        w4_type = self.generate_type(indices_w4,w4_index,w4_length)
-        
         # [B*sampleNum]
         w1_index = torch.cat(w1_index,dim=0)
         w2_index = torch.cat(w2_index,dim=0)
         w1_length = torch.cat(w1_length,dim=0)
         w2_length = torch.cat(w2_length,dim=0)
 
-        w3_index = torch.cat(w3_index,dim=0)
-        w4_index = torch.cat(w4_index,dim=0)
-        w3_length = torch.cat(w3_length,dim=0)
-        w4_length = torch.cat(w4_length,dim=0)
+        return  indices_w1, indices_w2,\
+                w1_mask, w2_mask, \
+                w1_index, w2_index,\
+                w1_length, w2_length,\
+                w1_type,w2_type
 
-        return  indices_w1, indices_w2,indices_w3, indices_w4,\
-                w1_mask, w2_mask, w3_mask, w4_mask, \
-                w1_index, w2_index,w3_index, w4_index,\
-                w1_length, w2_length, w3_length, w4_length,\
-                w1_type,w2_type, w3_type,w4_type
-        
+    # def generate_negative(self, all_sample, src_mapping, trg_mapping):
+    #     all_src_sentence, all_trg_sentence, all_src_ids, all_trg_ids = [], [], [], []
+    #     for sample in all_sample:
+    #         src, trg = sample[0], sample[1]
+    #         src_sentence, src_idxs, src_lens, src_word = src
+    #         trg_sentence, trg_idxs, trg_lens, trg_word = trg
+    #         ori_src_sentence, ori_trg_sentence = [k.numpy().tolist() for k in src_sentence], [k.numpy().tolist() for k in trg_sentence]
+    #         src_idx, src_len, trg_idx, trg_len = src_idxs[0], src_lens[0], trg_idxs[0], trg_lens[0]
+    #         src_ids, trg_ids = '_'.join([str(k) for k in ori_src_sentence[0][src_idx:src_idx + src_len]]), \
+    #                             '_'.join([str(k) for k in ori_trg_sentence[0][trg_idx:trg_idx + trg_len]])
+    #         this_src_sentence, this_trg_sentence = [], []
+    #         for each_src, each_trg in zip(ori_src_sentence, ori_trg_sentence):
+    #             this_src_sentence.append('_'.join([str(k) for k in each_src]))
+    #             this_trg_sentence.append('_'.join([str(k) for k in each_trg]))
+    #         all_src_ids.append(src_ids)
+    #         all_trg_ids.append(trg_ids)
+    #         all_src_sentence.append(this_src_sentence)
+    #         all_trg_sentence.append(this_trg_sentence)
 
-    def generate_negative(self, all_sample, src_mapping, trg_mapping):
-        all_src_sentence, all_trg_sentence, all_src_ids, all_trg_ids = [], [], [], []
-        for sample in all_sample:
-            src, trg = sample[0], sample[1]
-            src_sentence, src_idxs, src_lens, src_word = src
-            trg_sentence, trg_idxs, trg_lens, trg_word = trg
-            ori_src_sentence, ori_trg_sentence = [k.numpy().tolist() for k in src_sentence], [k.numpy().tolist() for k in trg_sentence]
-            src_idx, src_len, trg_idx, trg_len = src_idxs[0], src_lens[0], trg_idxs[0], trg_lens[0]
-            src_ids, trg_ids = '_'.join([str(k) for k in ori_src_sentence[0][src_idx:src_idx + src_len]]), \
-                                '_'.join([str(k) for k in ori_trg_sentence[0][trg_idx:trg_idx + trg_len]])
-            this_src_sentence, this_trg_sentence = [], []
-            for each_src, each_trg in zip(ori_src_sentence, ori_trg_sentence):
-                this_src_sentence.append('_'.join([str(k) for k in each_src]))
-                this_trg_sentence.append('_'.join([str(k) for k in each_trg]))
-            all_src_ids.append(src_ids)
-            all_trg_ids.append(trg_ids)
-            all_src_sentence.append(this_src_sentence)
-            all_trg_sentence.append(this_trg_sentence)
+    #     def sentence_map(ids, sentences, mapping):
+    #         # adv_ids = [[int(x) for x in ids[k].split('_')] for k in mapping]
+    #         adv_sentences = []
+    #         for i, each_map in enumerate(mapping):
+    #             this_adv_sentences = [each_sentence.replace(ids[each_map], ids[i]) for each_sentence in sentences[each_map]]
+    #             for j in range(len(this_adv_sentences)):
+    #                 this_adv_sentences[j] = [int(x) for x in this_adv_sentences[j].split('_')]
+    #             adv_sentences.append(this_adv_sentences)
+    #         return adv_sentences
 
-        def sentence_map(ids, sentences, mapping):
-            # adv_ids = [[int(x) for x in ids[k].split('_')] for k in mapping]
-            adv_sentences = []
-            for i, each_map in enumerate(mapping):
-                this_adv_sentences = [each_sentence.replace(ids[each_map], ids[i]) for each_sentence in sentences[each_map]]
-                for j in range(len(this_adv_sentences)):
-                    this_adv_sentences[j] = [int(x) for x in this_adv_sentences[j].split('_')]
-                adv_sentences.append(this_adv_sentences)
-            return adv_sentences
+    #     trg_adv_sentence = sentence_map(all_trg_ids, all_trg_sentence, trg_mapping)
+    #     src_adv_sentence = sentence_map(all_src_ids, all_src_sentence, src_mapping)
+    #     adv_sample = []
+    #     for i in range(len(all_sample)):
+    #         pos, neg = [], []
+    #         pos.append([torch.Tensor(x).long() for x in src_adv_sentence[i]]) # phrase + adv_example sentences
+    #         pos.append(all_sample[src_mapping[i]][0][1]) # adv_phrase index
+    #         pos.append(all_sample[i][0][2]) # phrase length
+    #         pos.append(all_sample[i][0][3]) # phrase
 
-        trg_adv_sentence = sentence_map(all_trg_ids, all_trg_sentence, trg_mapping)
-        src_adv_sentence = sentence_map(all_src_ids, all_src_sentence, src_mapping)
-        adv_sample = []
-        for i in range(len(all_sample)):
-            pos, neg = [], []
-            pos.append([torch.Tensor(x).long() for x in src_adv_sentence[i]]) # phrase + adv_example sentences
-            pos.append(all_sample[src_mapping[i]][0][1]) # adv_phrase index
-            pos.append(all_sample[i][0][2]) # phrase length
-            pos.append(all_sample[i][0][3]) # phrase
-
-            neg.append([torch.Tensor(x).long() for x in trg_adv_sentence[i]]) # phrase + adv_example sentences
-            neg.append(all_sample[trg_mapping[i]][1][1]) # adv_phrase index
-            neg.append(all_sample[i][1][2]) # phrase length
-            neg.append(all_sample[i][1][3]) # phrase
-            adv_sample.append([pos, neg])
-        return adv_sample
+    #         neg.append([torch.Tensor(x).long() for x in trg_adv_sentence[i]]) # phrase + adv_example sentences
+    #         neg.append(all_sample[trg_mapping[i]][1][1]) # adv_phrase index
+    #         neg.append(all_sample[i][1][2]) # phrase length
+    #         neg.append(all_sample[i][1][3]) # phrase
+    #         adv_sample.append([pos, neg])
+    #     return adv_sample
 
             
                 

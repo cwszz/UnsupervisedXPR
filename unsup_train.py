@@ -42,8 +42,8 @@ def train_model(model, train_loader, train_lg_loader=None):  # Train an epoch
         lg_tk = tqdm(train_lg_loader, total=len(train_lg_loader), position=0, leave=True)
 
     for step, batch in enumerate(tk):
-        batch_src = [tensors.to(device) for i,tensors in enumerate(batch) if i % 4 == 0]
-        batch_trg = [tensors.to(device) for i,tensors in enumerate(batch) if i % 4 == 1]
+        batch_src = [tensors.to(device) for i,tensors in enumerate(batch) if i % 2 == 0]
+        batch_trg = [tensors.to(device) for i,tensors in enumerate(batch) if i % 2 == 1]
         with autocast():
             output0, output1 = model(batch_src,batch_trg)
             loss1, acc1 = lossFunc(output0, output1)
@@ -65,8 +65,8 @@ def train_model(model, train_loader, train_lg_loader=None):  # Train an epoch
             scheduler.step()
     if train_lg_loader is not None:
         for step, batch in enumerate(lg_tk):
-            batch_src = [tensors.to(device) for i,tensors in enumerate(batch) if i % 4 == 0]
-            batch_trg = [tensors.to(device) for i,tensors in enumerate(batch) if i % 4 == 1]
+            batch_src = [tensors.to(device) for i,tensors in enumerate(batch) if i % 2 == 0]
+            batch_trg = [tensors.to(device) for i,tensors in enumerate(batch) if i % 2 == 1]
             with autocast():
                 output0, output1 = model(batch_src,batch_trg)
                 loss1, acc1 = lossFunc(output0, output1)
@@ -98,18 +98,18 @@ def test_model_single_encoder(model, val_loader):
         first_src_examples,first_trg_examples = None,None
         second_src_examples,second_trg_examples = None,None
         for step, batch in enumerate(tk):
-            batch_src = [tensors.to(device) for i,tensors in enumerate(batch) if i % 4 == 0]
-            batch_trg = [tensors.to(device) for i,tensors in enumerate(batch) if i % 4 == 1]
+            batch_src = [tensors.to(device) for i,tensors in enumerate(batch) if i % 2 == 0]
+            batch_trg = [tensors.to(device) for i,tensors in enumerate(batch) if i % 2 == 1]
             if args.distributed:
-                first_src = model.module.encoder_q(*batch_src,sample_num=args.dev_sample_num)
-                first_trg = model.module.encoder_q(*batch_trg,sample_num=args.dev_sample_num)
-                second_src = model.module.encoder_q(*batch_src,sample_num=args.dev_sample_num)
-                second_trg = model.module.encoder_q(*batch_trg,sample_num=args.dev_sample_num)
+                first_src = model.module.encoder_q(*batch_src,sample_num=args.test_sample_num)
+                first_trg = model.module.encoder_q(*batch_trg,sample_num=args.test_sample_num)
+                second_src = model.module.encoder_q(*batch_src,sample_num=args.test_sample_num)
+                second_trg = model.module.encoder_q(*batch_trg,sample_num=args.test_sample_num)
             else:
-                first_src = model.encoder_q(*batch_src,sample_num=args.dev_sample_num)
-                first_trg = model.encoder_q(*batch_trg,sample_num=args.dev_sample_num)
-                second_src = model.encoder_q(*batch_src,sample_num=args.dev_sample_num)
-                second_trg = model.encoder_q(*batch_trg,sample_num=args.dev_sample_num)
+                first_src = model.encoder_q(*batch_src,sample_num=args.test_sample_num)
+                first_trg = model.encoder_q(*batch_trg,sample_num=args.test_sample_num)
+                second_src = model.encoder_q(*batch_src,sample_num=args.test_sample_num)
+                second_trg = model.encoder_q(*batch_trg,sample_num=args.test_sample_num)
             first_src_examples = first_src if first_src_examples is None else torch.cat([first_src_examples,first_src],dim=0)
             first_trg_examples = first_trg if first_trg_examples is None else torch.cat([first_trg_examples,first_trg],dim=0)
             second_src_examples = second_src if second_src_examples is None else torch.cat([second_src_examples,second_src],dim=0)
@@ -140,23 +140,25 @@ if __name__ == '__main__':
     args.src_context_path = "./data/sentences/en-" + args.lg + "-phrase-sentences." + args.sn + ".tsv"
     args.trg_context_path =  "./data/sentences/" + args.lg + "-phrase-sentences." +args.sn + ".tsv"
     ''' mask_percent '''
-    ismasked = True if args.ismasked == '1' else False
+    bn = True if args.BN else False
+    ismasked = True if args.ismasked == 1 else False
     mask_per = args.mask_percent
     queue_length = int(args.queue_length)
     para_T = args.T_para
     with_span_eos = True if args.wo_span_eos == 'true' else False
     mask_part = 'MASK{}_'.format(args.mask_percent) if ismasked else ''
-    queue_part = '' if queue_length else 'QUEUE{}_'.format(str(queue_length))
+    queue_part = 'QUEUE{}_'.format(str(queue_length))
     dual_part = 'dual_' if int(args.dual_lg) else '' 
     train_sample_part = 'trainSample{}_'.format(args.train_sample_num) 
     lg_part = 'LG-{}_'.format(args.lg)
+    bn_part = 'BN_' if bn else ''
     avail_sn_part = 'avail-{}_'.format(args.all_sentence_num)
     seed_part = 'seed-{}_'.format(args.seed)
     T_part = 'T-{}_'.format(para_T)
     epoch_part = 'epoch-{}_'.format(args.num_train_epochs)
     momentum_part = 'm-{}_'.format(args.momentum)
     layer_part = 'layer-{}_'.format(args.layer_id)
-    para_part = [mask_part,queue_part,dual_part,lg_part,train_sample_part,avail_sn_part,seed_part,T_part,epoch_part,momentum_part,layer_part]
+    para_part = [mask_part,queue_part,dual_part,bn_part,lg_part,train_sample_part,avail_sn_part,seed_part,T_part,epoch_part,momentum_part,layer_part]
 
     args.output_loss_dir = './' + args.output_log_dir + '/' + ''.join(para_part)
     args.output_model_path = args.output_loss_dir + '/best.pt'
@@ -176,7 +178,7 @@ if __name__ == '__main__':
         max_len=args.sentence_max_len, mask=ismasked, mask_percent=mask_per)
     dev_dataset = WordWithContextDatasetWW(dev_phrase_pairs, en_word2context, lg_word2context,prepend_bos=with_span_eos,append_eos=with_span_eos,sampleNum=args.dev_sample_num,
         max_len=args.sentence_max_len)
-    test_dataset = WordWithContextDatasetWW(test_phrase_pairs, en_word2context, lg_word2context,prepend_bos=with_span_eos,append_eos=with_span_eos,sampleNum=args.dev_sample_num,
+    test_dataset = WordWithContextDatasetWW(test_phrase_pairs, en_word2context, lg_word2context,prepend_bos=with_span_eos,append_eos=with_span_eos,sampleNum=args.test_sample_num,
         max_len=args.sentence_max_len)
     
     # Data Loader
@@ -194,7 +196,7 @@ if __name__ == '__main__':
 
     # Model Init
     config = AutoConfig.from_pretrained(args.model_name_or_path)
-    model = MoCo(config=config,args=args,K=queue_length,T=para_T,m=args.momentum).to(device)
+    model = MoCo(config=config,args=args,K=queue_length,T=para_T,m=args.momentum, bn=bn).to(device)
 
     bert_param_optimizer = model.named_parameters()
     no_decay = ["bias", "LayerNorm.weight"]

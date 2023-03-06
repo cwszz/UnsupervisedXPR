@@ -132,7 +132,7 @@ def getArgs():
                         help="whether distributed or not")
     parser.add_argument('--seed',
                         type=int,
-                        default=40,
+                        default=42,
                         help="random seed for initialization")
     parser.add_argument('--gradient_accumulation_steps',
                         type=int,
@@ -154,7 +154,7 @@ def getArgs():
                         type=int,
                         help="Total batch size for training.")
     parser.add_argument("--eval_batch_size",
-                        default=16,
+                        default=32,
                         type=int,
                         help="Total batch size for eval.")
 
@@ -164,6 +164,7 @@ def getArgs():
     parser.add_argument('--dev_all_sentence_num', type=int,
                         default=32, help="only for predict")
     parser.add_argument('--dev_sample_num', type=int, default=32)
+    parser.add_argument('--test_sample_num', type=int, default=32)
     parser.add_argument('--cut_type', type=str, default='eos-eos')
     parser.add_argument('--wo_span_eos', type=str, default='true')
     parser.add_argument('--is_type', type=int, default=-1, help='token_type')

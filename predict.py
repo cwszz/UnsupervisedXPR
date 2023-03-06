@@ -37,8 +37,8 @@ def test_model(model, val_loader, adv_loader=None):  # 验证
         second_src_examples,second_trg_examples = None,None
         adv_src_examples, adv_trg_examples = None, None
         for step, batch in enumerate(tk):
-            batch_src = [tensors.to(device) for i,tensors in enumerate(batch) if i % 4 == 0]
-            batch_trg = [tensors.to(device) for i,tensors in enumerate(batch) if i % 4 == 1]
+            batch_src = [tensors.to(device) for i,tensors in enumerate(batch) if i % 2 == 0]
+            batch_trg = [tensors.to(device) for i,tensors in enumerate(batch) if i % 2 == 1]
             if args.distributed:
                 first_src = model.module.encoder_q(*batch_src,sample_num=args.dev_sample_num)
                 first_trg = model.module.encoder_q(*batch_trg,sample_num=args.dev_sample_num)
@@ -56,8 +56,8 @@ def test_model(model, val_loader, adv_loader=None):  # 验证
         if adv_loader:
             adv_tk = tqdm(adv_loader, total=len(val_loader), position=0, leave=True)
             for step, batch in enumerate(adv_tk):
-                adv_batch_src = [tensors.to(device) for i,tensors in enumerate(batch) if i % 4 == 0]
-                adv_batch_trg = [tensors.to(device) for i,tensors in enumerate(batch) if i % 4 == 1]
+                adv_batch_src = [tensors.to(device) for i,tensors in enumerate(batch) if i % 2 == 0]
+                adv_batch_trg = [tensors.to(device) for i,tensors in enumerate(batch) if i % 2 == 1]
                 if args.distributed:
                     adv_src = model.module.encoder_q(*adv_batch_src,sample_num=args.dev_sample_num)
                     adv_trg = model.module.encoder_q(*adv_batch_trg,sample_num=args.dev_sample_num)
@@ -92,8 +92,8 @@ def test_model_single_encoder(model, val_loader):
         first_src_examples,first_trg_examples = None,None
         second_src_examples,second_trg_examples = None,None
         for step, batch in enumerate(tk):
-            batch_src = [tensors.to(device) for i,tensors in enumerate(batch) if i % 4 == 0]
-            batch_trg = [tensors.to(device) for i,tensors in enumerate(batch) if i % 4 == 1]
+            batch_src = [tensors.to(device) for i,tensors in enumerate(batch) if i % 2 == 0]
+            batch_trg = [tensors.to(device) for i,tensors in enumerate(batch) if i % 2 == 1]
             if args.distributed:
                 first_src = model.module.encoder_q(*batch_src,sample_num=args.dev_sample_num)
                 first_trg = model.module.encoder_q(*batch_trg,sample_num=args.dev_sample_num)
