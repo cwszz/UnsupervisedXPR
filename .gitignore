@@ -32,5 +32,7 @@ adv_result
 unsup_result
 mask_unsup_result
 mask_result
-old_cpt
+old_cpt/*/*.pt
+!log/test
+!old_cpt/*/loss_acc.txt
 __pycache__
