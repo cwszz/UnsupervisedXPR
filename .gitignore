@@ -21,7 +21,7 @@ old_log
 woMoco
 zero-shot
 own_result
-cpt
+cpt/*/*.pt
 exper.py
 process_wiki_link.py
 result
@@ -35,4 +35,5 @@ mask_result
 old_cpt/*/*.pt
 !log/test
 !old_cpt/*/loss_acc.txt
+!cpt/*/loss_acc.txt
 __pycache__
