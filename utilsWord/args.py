@@ -184,6 +184,7 @@ def getArgs():
     # unsupervised 
 
     parser.add_argument("--dual_lg", default=0, type=int,help="en + lg in unsupervised")
+    parser.add_argument("--onlylg", default=0, type=int,help="lg in unsupervised")
     parser.add_argument("--no_overlap", default=0, type=int,help="en + lg in unsupervised")
     parser.add_argument("--mask_percent",default=2,type=int,help="mask percent form 0 -> 9")              
     parser.add_argument("--ismasked",default=0,type=int,help="corresponding phrase is masked")
