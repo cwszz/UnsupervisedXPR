@@ -154,7 +154,7 @@ def getArgs():
                         type=int,
                         help="Total batch size for training.")
     parser.add_argument("--eval_batch_size",
-                        default=32,
+                        default=4,
                         type=int,
                         help="Total batch size for eval.")
 

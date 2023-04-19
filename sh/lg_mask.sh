@@ -1,4 +1,4 @@
-for lg in 'de' 'es' 'ja' 'ko' 'zh' 'ru' ;
+for lg in 'ko' 'zh' 'ru' ;
 do
 export CUDA_VISIBLE_DEVICES='3,4'
 python -m torch.distributed.launch --nproc_per_node=2 --master_port 29503 \
@@ -18,7 +18,7 @@ python -m torch.distributed.launch --nproc_per_node=2 --master_port 29503 \
 
 done
 
-for lg in 'de' 'es' 'fr' ;
+for lg in 'de' 'es' ;
 do
 export CUDA_VISIBLE_DEVICES='3,4'
 python -m torch.distributed.launch --nproc_per_node=2 --master_port 29503 \

@@ -158,7 +158,7 @@ if __name__ == '__main__':
     model = MoCo(config=config,args=args,K=queue_length,T=para_T,m=args.momentum).to(device)
     if not unsup:
         # t = torch.load('./adv_result/4-fr-32-true-0-0.06-1-100-0.999-0-dev_qq-layer_12/best.pt')
-        t = torch.load(args.load_model_path, map_location={'cuda:1':'cuda:0'})
+        t = torch.load(args.load_model_path) # , map_location={'cuda:1':'cuda:0'}
         k = OrderedDict()
         for each_k in t.keys():
             k[each_k.replace('module.','')] = t[each_k]

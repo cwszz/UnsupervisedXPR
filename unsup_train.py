@@ -30,6 +30,8 @@ lossFunc = MoCoLoss().to(device)
 global best_acc
 global no_more_gain
 global local_gain
+global dev_time
+dev_time = 0
 best_acc = 0
 local_gain = 0
 no_more_gain = torch.zeros(1).to(device)
@@ -76,6 +78,8 @@ def test_model_single_encoder(model, val_loader):
 def test_per_step(args, model, val_loader):
     global best_acc
     global local_gain
+    global dev_time
+    dev_time += 1
     val_acc = test_model_single_encoder(model,val_loader)
     if args.local_rank == 1 or args.local_rank == -1:
         if not os.path.exists(args.output_loss_dir):
@@ -145,6 +149,7 @@ if args.distributed:
 def main():
     global no_more_gain
     global local_gain
+    global dev_time
     for epoch in range(max(args.num_train_epochs, args.num_train_epochs )):
         print('epoch:', epoch)
         if args.distributed:
@@ -156,7 +161,7 @@ def main():
             train_loss, train_acc = train_model(model, train_loader, args=args, val_loader=val_loader, pre_step=pre_step)
         if len(train_loader) < 100:
             test_per_step(args, model,val_loader)
-        if local_gain > 15 and epoch > 30:
+        if local_gain > 15 and dev_time > 30:
         # if True:
             no_more_gain = torch.tensor([1]).float().to(device)
         dist.all_reduce(no_more_gain)
