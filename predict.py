@@ -19,7 +19,7 @@ args = getArgs()
 device_id = 0
 seed_everything(args.seed)  # 固定随机种子
 # tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path)
-tokenizer = AutoTokenizer.from_pretrained('xlm-roberta-base')
+# tokenizer = AutoTokenizer.from_pretrained('xlm-roberta-base')
 if args.distributed:
     device = torch.device('cuda', args.local_rank)
 else:
@@ -135,30 +135,30 @@ if __name__ == '__main__':
     args.test_phrase_path = dataset_path + "{}/{}-en-{}-32-phrase.txt".format(test_folder,test_folder,args.test_lg)
     args.src_context_path = dataset_path + "sentences/en-{}-phrase-sentences.32.tsv".format(args.test_lg)
     args.trg_context_path = dataset_path + "sentences/{}-phrase-sentences.32.tsv".format(args.test_lg)
-    adv_src_context_path = "./adv_data/adv_sentences/en-{}-phrase-sentences.32.tsv".format(args.test_lg)
-    adv_trg_context_path = "./adv_data/adv_sentences/{}-phrase-sentences.32.tsv".format(args.test_lg)
+    # adv_src_context_path = "./adv_data/adv_sentences/en-{}-phrase-sentences.32.tsv".format(args.test_lg)
+    # adv_trg_context_path = "./adv_data/adv_sentences/{}-phrase-sentences.32.tsv".format(args.test_lg)
     queue_length = int(args.queue_length)
     para_T = args.T_para 
     test_phrase_pairs = load_words_mapping(args.test_phrase_path)
     en_word2context = load_word2context_from_tsv(args.src_context_path,args.dev_all_sentence_num)
     lg_word2context = load_word2context_from_tsv(args.trg_context_path,args.dev_all_sentence_num)
-    adv_en_word2context = load_word2context_from_tsv(adv_src_context_path, args.dev_all_sentence_num)
-    adv_lg_word2context = load_word2context_from_tsv(adv_trg_context_path, args.dev_all_sentence_num)
+    # adv_en_word2context = load_word2context_from_tsv(adv_src_context_path, args.dev_all_sentence_num)
+    # adv_lg_word2context = load_word2context_from_tsv(adv_trg_context_path, args.dev_all_sentence_num)
     unsup = args.unsupervised
     best_acc = 0
     
     test_dataset = WordWithContextDatasetWW(test_phrase_pairs, en_word2context, lg_word2context, sampleNum=args.dev_sample_num,
         max_len=args.sentence_max_len)
-    adv_dataset = WordWithContextDatasetWW(test_phrase_pairs,adv_en_word2context, adv_lg_word2context, sampleNum=args.dev_sample_num,
-        max_len=args.sentence_max_len)
+    # adv_dataset = WordWithContextDatasetWW(test_phrase_pairs,adv_en_word2context, adv_lg_word2context, sampleNum=args.dev_sample_num,
+        # max_len=args.sentence_max_len)
     test_loader = DataLoader(test_dataset, batch_size=args.eval_batch_size, collate_fn=test_dataset.collate, shuffle=False,num_workers=16)
-    adv_loader = DataLoader(adv_dataset,  batch_size=args.eval_batch_size, collate_fn=adv_dataset.collate, shuffle=False,num_workers=16)
+    # adv_loader = DataLoader(adv_dataset,  batch_size=args.eval_batch_size, collate_fn=adv_dataset.collate, shuffle=False,num_workers=16)
     config = AutoConfig.from_pretrained('xlm-roberta-base')
     # c = torch.load('./model/pytorch_model.bin')
     model = MoCo(config=config,args=args,K=queue_length,T=para_T,m=args.momentum).to(device)
     if not unsup:
         # t = torch.load('./adv_result/4-fr-32-true-0-0.06-1-100-0.999-0-dev_qq-layer_12/best.pt')
-        t = torch.load(args.load_model_path) # , map_location={'cuda:1':'cuda:0'}
+        t = torch.load(args.load_model_path, map_location={'cuda:1':'cuda:0'}) #
         k = OrderedDict()
         for each_k in t.keys():
             k[each_k.replace('module.','')] = t[each_k]

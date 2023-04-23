@@ -1,178 +1,118 @@
-for lg in 'ko' 'zh' 'ru' ;
-do
-export CUDA_VISIBLE_DEVICES='2,5'
-python -m torch.distributed.launch --nproc_per_node=2 --master_port 29509 \
-    unsup_train.py \
-    --lg $lg \
-    --sn '32' \
-    --simclr 0 \
-    --T_para 0.06 \
-    --seed 1 \
-    --ismasked 0 \
-    --mask_percent 0 \
-    --queue_length 0\
-    --output_log_dir 'cpt' \
-    --dev_only_q_encoder 1 \
-    > log/new_unsup/nomask_${lg}-1.log 2>&1
-
-done
-
 for lg in 'fr' ;
 do
-export CUDA_VISIBLE_DEVICES='2,5'
-python -m torch.distributed.launch --nproc_per_node=2 --master_port 29509 \
+export CUDA_VISIBLE_DEVICES='4,5'
+
+python -m torch.distributed.launch --nproc_per_node=2 --master_port 29506 \
     unsup_train.py \
     --lg $lg \
     --sn '32' \
     --simclr 0 \
     --T_para 0.06 \
     --seed 1 \
-    --onlylg 1\
-    --ismasked 1 \
-    --mask_percent 0 \
-    --queue_length 0\
-    --output_log_dir 'cpt' \
-    --dev_only_q_encoder 1 \
-    > log/new_unsup/lg_mask0${lg}-1.log 2>&1
-
-python -m torch.distributed.launch --nproc_per_node=2 --master_port 29509 \
-    unsup_train.py \
-    --lg $lg \
-    --sn '32' \
-    --simclr 0 \
-    --T_para 0.06 \
-    --seed 1 \
-    --onlylg 1\
-    --ismasked 1 \
-    --mask_percent 1 \
-    --queue_length 0\
-    --output_log_dir 'cpt' \
-    --dev_only_q_encoder 1 \
-    > log/new_unsup/lg_mask1${lg}-1.log 2>&1
-
-python -m torch.distributed.launch --nproc_per_node=2 --master_port 29509 \
-    unsup_train.py \
-    --lg $lg \
-    --sn '32' \
-    --simclr 0 \
-    --T_para 0.06 \
-    --seed 1 \
-    --onlylg 1\
-    --ismasked 1 \
-    --mask_percent 2 \
-    --queue_length 0\
-    --output_log_dir 'cpt' \
-    --dev_only_q_encoder 1 \
-    > log/new_unsup/lg_mask2${lg}-1.log 2>&1
-
-python -m torch.distributed.launch --nproc_per_node=2 --master_port 29509 \
-    unsup_train.py \
-    --lg $lg \
-    --sn '32' \
-    --simclr 0 \
-    --T_para 0.06 \
-    --seed 1 \
-    --onlylg 1\
-    --ismasked 1 \
-    --mask_percent 3 \
-    --queue_length 0\
-    --output_log_dir 'cpt' \
-    --dev_only_q_encoder 1 \
-    > log/new_unsup/lg_mask3${lg}-1.log 2>&1
-
-python -m torch.distributed.launch --nproc_per_node=2 --master_port 29509 \
-    unsup_train.py \
-    --lg $lg \
-    --sn '32' \
-    --simclr 0 \
-    --T_para 0.06 \
-    --seed 1 \
-    --onlylg 1\
-    --ismasked 1 \
-    --mask_percent 4 \
-    --queue_length 0\
-    --output_log_dir 'cpt' \
-    --dev_only_q_encoder 1 \
-    > log/new_unsup/lg_mask4${lg}-1.log 2>&1
-
-
-python -m torch.distributed.launch --nproc_per_node=2 --master_port 29509 \
-    unsup_train.py \
-    --lg $lg \
-    --sn '32' \
-    --simclr 0 \
-    --T_para 0.06 \
-    --seed 1 \
-    --onlylg 1\
-    --ismasked 1 \
-    --mask_percent 5 \
-    --queue_length 0\
-    --output_log_dir 'cpt' \
-    --dev_only_q_encoder 1 \
-    > log/new_unsup/lg_mask5${lg}-1.log 2>&1
-
-
-python -m torch.distributed.launch --nproc_per_node=2 --master_port 29509 \
-    unsup_train.py \
-    --lg $lg \
-    --sn '32' \
-    --simclr 0 \
-    --T_para 0.06 \
-    --seed 1 \
-    --onlylg 1\
-    --ismasked 1 \
-    --mask_percent 6 \
-    --queue_length 0\
-    --output_log_dir 'cpt' \
-    --dev_only_q_encoder 1 \
-    > log/new_unsup/lg_mask6${lg}-1.log 2>&1
-
-
-python -m torch.distributed.launch --nproc_per_node=2 --master_port 29509 \
-    unsup_train.py \
-    --lg $lg \
-    --sn '32' \
-    --simclr 0 \
-    --T_para 0.06 \
-    --seed 1 \
-    --onlylg 1\
-    --ismasked 1 \
-    --mask_percent 7 \
-    --queue_length 0\
-    --output_log_dir 'cpt' \
-    --dev_only_q_encoder 1 \
-    > log/new_unsup/lg_mask7${lg}-1.log 2>&1
-
-
-python -m torch.distributed.launch --nproc_per_node=2 --master_port 29509 \
-    unsup_train.py \
-    --lg $lg \
-    --sn '32' \
-    --simclr 0 \
-    --T_para 0.06 \
-    --seed 1 \
-    --onlylg 1\
+    --onlylg 0\
     --ismasked 1 \
     --mask_percent 8 \
+    --all_sentence_num 16\
+    --dev_sample_num 16\
+    --test_sample_num 16\
     --queue_length 0\
     --output_log_dir 'cpt' \
     --dev_only_q_encoder 1 \
-    > log/new_unsup/lg_mask8${lg}-1.log 2>&1
+    > log/new_unsup/en_mask8_16${lg}-1.log 2>&1
 
-
-python -m torch.distributed.launch --nproc_per_node=2 --master_port 29509 \
+python -m torch.distributed.launch --nproc_per_node=2 --master_port 29506 \
     unsup_train.py \
     --lg $lg \
     --sn '32' \
     --simclr 0 \
     --T_para 0.06 \
     --seed 1 \
-    --onlylg 1\
+    --onlylg 0\
     --ismasked 1 \
-    --mask_percent 9 \
+    --mask_percent 8 \
+    --all_sentence_num 8\
+    --dev_sample_num 8\
+    --test_sample_num 8\
     --queue_length 0\
     --output_log_dir 'cpt' \
     --dev_only_q_encoder 1 \
-    > log/new_unsup/lg_mask9${lg}-1.log 2>&1
+    > log/new_unsup/en_mask8_8${lg}-1.log 2>&1
+
+python -m torch.distributed.launch --nproc_per_node=2 --master_port 29506 \
+    unsup_train.py \
+    --lg $lg \
+    --sn '32' \
+    --simclr 0 \
+    --T_para 0.06 \
+    --seed 1 \
+    --onlylg 0\
+    --ismasked 1 \
+    --mask_percent 8 \
+    --all_sentence_num 4\
+    --train_sample_num 4 \
+    --dev_sample_num 4\
+    --test_sample_num 4\
+    --queue_length 0\
+    --output_log_dir 'cpt' \
+    --dev_only_q_encoder 1 \
+    > log/new_unsup/en_mask8_4${lg}-1.log 2>&1
+
+python -m torch.distributed.launch --nproc_per_node=2 --master_port 29506 \
+    unsup_train.py \
+    --lg $lg \
+    --sn '32' \
+    --simclr 0 \
+    --T_para 0.06 \
+    --seed 1 \
+    --onlylg 0\
+    --ismasked 1 \
+    --mask_percent 8 \
+    --all_sentence_num 2\
+    --train_sample_num 2 \
+    --dev_sample_num 2\
+    --test_sample_num 2\
+    --queue_length 0\
+    --output_log_dir 'cpt' \
+    --dev_only_q_encoder 1 \
+    > log/new_unsup/en_mask8_2${lg}-1.log 2>&1
+
+python -m torch.distributed.launch --nproc_per_node=2 --master_port 29506 \
+    unsup_train.py \
+    --lg $lg \
+    --sn '32' \
+    --simclr 0 \
+    --T_para 0.06 \
+    --seed 1 \
+    --onlylg 0\
+    --ismasked 1 \
+    --mask_percent 8 \
+    --all_sentence_num 1\
+    --train_sample_num 1 \
+    --dev_sample_num 1\
+    --test_sample_num 1\
+    --queue_length 0\
+    --output_log_dir 'cpt' \
+    --dev_only_q_encoder 1 \
+    > log/new_unsup/en_mask8_1${lg}-1.log 2>&1
+
+python -m torch.distributed.launch --nproc_per_node=2 --master_port 29506 \
+    unsup_train.py \
+    --lg $lg \
+    --sn '32' \
+    --simclr 0 \
+    --T_para 0.06 \
+    --seed 1 \
+    --onlylg 0\
+    --ismasked 1 \
+    --mask_percent 8 \
+    --all_sentence_num 0\
+    --train_sample_num 0 \
+    --dev_sample_num 0\
+    --test_sample_num 0\
+    --queue_length 0\
+    --output_log_dir 'cpt' \
+    --dev_only_q_encoder 1 \
+    > log/new_unsup/en_mask8_0${lg}-1.log 2>&1
+
 done
 
